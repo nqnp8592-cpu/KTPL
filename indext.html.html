@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc nghiệm Bình đẳng giới trong Gia đình</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fdf2f8; 
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+        }
+        .pastel-card {
+            background-color: #ffffff;
+            border: 6px solid #fce7f3;
+        }
+        .option-card {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #f3f4f6;
+            background-color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .option-card:hover {
+            transform: scale(1.03);
+            border-color: #fbcfe8;
+            background-color: #fff1f2;
+            box-shadow: 0 10px 15px -3px rgba(251, 207, 232, 0.4);
+        }
+        .correct {
+            border-color: #a7f3d0 !important;
+            background-color: #ecfdf5 !important;
+            color: #065f46 !important;
+        }
+        .incorrect {
+            border-color: #fecaca !important;
+            background-color: #fef2f2 !important;
+            color: #991b1b !important;
+        }
+        .progress-bar-inner {
+            background: linear-gradient(90deg, #fbcfe8, #c084fc, #fbcfe8);
+            background-size: 200% 100%;
+            animation: gradientMove 3s linear infinite;
+            transition: width 0.5s ease;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 100% 0%; }
+            100% { background-position: -100% 0%; }
+        }
+        #timer.warning {
+            color: #ef4444;
+            animation: shake 0.5s infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px) rotate(-1deg); }
+            75% { transform: translateX(2px) rotate(1deg); }
+        }
+        
+        /* Hiệu ứng Pháo Hoa / Confetti */
+        .confetti {
+            position: absolute;
+            pointer-events: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: confettiFall 1.5s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes confettiFall {
+            0% { 
+                transform: translate(0, 0) rotate(0deg) scale(1); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(var(--tx), var(--ty)) rotate(var(--tr)) scale(0.5); 
+                opacity: 0; 
+            }
+        }
+
+        .floating-emoji {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatUp 6s linear infinite;
+            filter: blur(1px);
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Decorative Background Icons -->
+    <div id="emoji-container"></div>
+
+    <div id="app" class="pastel-card w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden relative z-10">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-pink-100 via-purple-100 to-pink-100 p-8 text-center relative border-b-4 border-pink-50">
+            <div class="flex justify-center gap-2 mb-2">
+                <span>✨</span><span>🧸</span><span>✨</span>
+            </div>
+            <h1 class="text-3xl font-black text-pink-500 uppercase tracking-tighter mb-1">Góc Nhỏ Bình Đẳng</h1>
+            <p class="text-purple-400 text-sm font-bold">Cùng xây tổ ấm, đắp xây nụ cười 🦄</p>
+            
+            <!-- Timer Display -->
+            <div id="timer-container" class="hidden absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white text-pink-400 px-6 py-2 rounded-2xl font-black shadow-xl flex items-center gap-2 border-4 border-pink-100 z-20">
+                <span class="text-xl">⏰</span>
+                <span id="timer" class="font-mono text-xl">05:00</span>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="p-12 text-center">
+            <div class="mb-8 relative inline-block">
+                <div class="bg-gradient-to-tr from-pink-200 to-purple-200 rounded-full p-1 w-40 h-40 shadow-inner">
+                    <div class="bg-white rounded-full w-full h-full flex items-center justify-center text-7xl">
+                        🍭
+                    </div>
+                </div>
+                <div class="absolute -top-4 -left-4 text-4xl animate-bounce">🎀</div>
+                <div class="absolute -bottom-2 -right-2 text-4xl animate-pulse">🌟</div>
+            </div>
+            <h2 class="text-3xl font-black mb-4 text-gray-700">Sẵn sàng chưa bạn ơi?</h2>
+            <div class="bg-purple-100 text-purple-600 rounded-2xl py-2 px-6 inline-flex items-center gap-2 font-bold mb-8 shadow-sm">
+                <span>⏱️</span> 5 Phút Thử Thách
+            </div>
+            <p class="text-gray-500 mb-10 leading-relaxed font-medium">
+                Khám phá những kiến thức bổ ích về <span class="text-pink-400 font-bold">Bình đẳng giới</span> qua 10 câu hỏi siêu dễ thương nhé!
+            </p>
+            <button onclick="startQuiz()" class="bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white font-black py-5 px-16 rounded-[2rem] shadow-[0_10px_0_0_#f472b6] transition-all transform hover:-translate-y-1 active:translate-y-1 active:shadow-none">
+                BẮT ĐẦU NGAY 🚀
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden p-8 pt-14">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between items-end text-sm font-black text-gray-400 mb-2 px-2">
+                    <span class="bg-pink-100 text-pink-500 px-3 py-1 rounded-lg">Câu hỏi <span id="current-q">1</span>/10</span>
+                    <span id="score-text" class="bg-purple-100 text-purple-500 px-3 py-1 rounded-lg">Đúng: 0 🍬</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-6 p-1.5 shadow-inner border-2 border-white">
+                    <div id="progress" class="progress-bar-inner h-full rounded-full" style="width: 10%"></div>
+                </div>
+            </div>
+
+            <!-- Question Box -->
+            <div class="mb-8 relative">
+                <div class="absolute -top-4 -left-4 text-3xl">💬</div>
+                <div class="bg-gradient-to-br from-white to-pink-50 p-8 rounded-[2.5rem] border-4 border-pink-100 shadow-sm">
+                    <h3 id="question-text" class="text-xl font-bold text-gray-700 leading-relaxed text-center"></h3>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div id="options-container" class="space-y-4">
+                <!-- Options will be injected here -->
+            </div>
+
+            <!-- Navigation -->
+            <div class="mt-10 flex justify-center">
+                <button id="next-btn" onclick="nextQuestion()" disabled class="bg-gray-200 text-gray-300 font-black py-4 px-14 rounded-2xl cursor-not-allowed shadow-md transition-all">
+                    TIẾP TỤC ✨
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden p-12 text-center">
+            <div id="result-emoji" class="text-7xl mb-4">🏆</div>
+            <h2 id="result-title" class="text-4xl font-black mb-4 text-pink-500">KẾT QUẢ NÈ!</h2>
+            
+            <div class="my-8 relative inline-block scale-125">
+                <svg class="w-40 h-40 transform -rotate-90 drop-shadow-lg">
+                    <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-pink-50" />
+                    <circle id="result-progress" cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" stroke-dasharray="440" stroke-dashoffset="440" class="text-pink-400 transition-all duration-1000" />
+                </svg>
+                <div id="score-circle" class="absolute inset-0 flex items-center justify-center text-4xl font-black text-gray-700">
+                    0/10
+                </div>
+            </div>
+            
+            <div class="bg-white border-4 border-purple-100 rounded-3xl p-6 mb-10 shadow-sm italic">
+                <p id="result-comment" class="text-lg text-gray-600 font-bold"></p>
+            </div>
+
+            <button onclick="restartQuiz()" class="bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white font-black py-5 px-14 rounded-3xl shadow-xl transition-all hover:scale-105 active:scale-95">
+                CHƠI LẠI NHÉ 🦄
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "Theo Luật Bình đẳng giới, vợ và chồng có quyền và nghĩa vụ như thế nào trong việc sở hữu tài sản chung?",
+                options: ["Ngang nhau trong việc sở hữu và quyết định.", "Chồng quyết định chính vì là trụ cột.", "Vợ quản lý toàn bộ vì là tay hòm chìa khóa.", "Ai làm ra nhiều tiền hơn thì có quyền."],
+                answer: 0
+            },
+            {
+                q: "Hành động nào thể hiện bình đẳng giới trong việc chăm sóc con cái?",
+                options: ["Mặc định con cái là trách nhiệm của mẹ.", "Cả bố và mẹ cùng bàn bạc phương pháp giáo dục.", "Bố chỉ đóng góp tiền, mẹ lo học hành.", "Chỉ đầu tư cho con trai đi học."],
+                answer: 1
+            },
+            {
+                q: "Việc chia sẻ công việc nhà có ý nghĩa gì đối với bình đẳng giới?",
+                options: ["Giúp vợ có thời gian nghỉ ngơi, tham gia xã hội.", "Làm giảm uy tín của người đàn ông.", "Chỉ là giải pháp tạm thời khi vợ bận.", "Không cần thiết nếu có người giúp việc."],
+                answer: 0
+            },
+            {
+                q: "Quy định nào ĐÚNG về quyền của con trai và con gái?",
+                options: ["Con trai được ưu tiên thừa kế hơn.", "Cả hai được tạo điều kiện học tập như nhau.", "Con gái cần làm nhiều việc nhà hơn để làm dâu.", "Chỉ con trai mới cần thờ cúng tổ tiên."],
+                answer: 1
+            },
+            {
+                q: "Vợ chồng cùng lựa chọn biện pháp kế hoạch hóa gia đình là biểu hiện của:",
+                options: ["Sự phụ thuộc của vợ vào chồng.", "Bình đẳng giới trong lĩnh vực gia đình.", "Sự can thiệp quá sâu vào đời tư.", "Chỉ dành cho các hộ nghèo."],
+                answer: 1
+            },
+            {
+                q: "Hành vi nào vi phạm bình đẳng giới trong gia đình?",
+                options: ["Chồng ủng hộ vợ đi học nâng cao trình độ.", "Chồng tự ý bán tài sản chung không hỏi vợ.", "Vợ và chồng cùng nhau dọn dẹp nhà cửa.", "Cùng đưa con đi tiêm chủng định kỳ."],
+                answer: 1
+            },
+            {
+                q: "Khi có ý kiến khác về chi tiêu, cách giải quyết nào là phù hợp nhất?",
+                options: ["Vợ phải nghe theo ý kiến chồng.", "Vợ chồng cùng thảo luận tìm tiếng nói chung.", "Mỗi người tự tiêu tiền mình làm ra.", "Ai lớn tuổi hơn thì có quyền quyết định."],
+                answer: 1
+            },
+            {
+                q: "Vì sao việc tuyên truyền bình đẳng giới lại cần thiết?",
+                options: ["Để thay đổi định kiến giới lạc hậu.", "Để phụ nữ lấn át quyền đàn ông.", "Để thực hiện theo phong trào hình thức.", "Để làm giảm các giá trị truyền thống."],
+                answer: 0
+            },
+            {
+                q: "Nam và nữ trong gia đình có trách nhiệm gì với việc nhà?",
+                options: ["Chỉ phụ nữ và trẻ em gái làm.", "Cùng có trách nhiệm chia sẻ công việc nhà.", "Chỉ người không đi làm mới phải làm.", "Nam làm việc nặng, nữ làm việc nhẹ."],
+                answer: 1
+            },
+            {
+                q: "Người đàn ông làm việc nhà cùng vợ được xã hội nhìn nhận là:",
+                options: ["Người nhu nhược, thiếu bản lĩnh.", "Người hiện đại, trách nhiệm và tôn trọng vợ.", "Người làm việc vô ích.", "Người đang làm thay việc của phụ nữ."],
+                answer: 1
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        let timerInterval;
+        let timeLeft = 300;
+
+        function createFloatingEmojis() {
+            const container = document.getElementById('emoji-container');
+            const emojis = ['🌸', '✨', '💖', '🦄', '🎀', '🍭', '🌈', '🧸', '🐣', '🦋'];
+            for(let i = 0; i < 15; i++) {
+                const span = document.createElement('span');
+                span.className = 'floating-emoji text-3xl';
+                span.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                span.style.left = Math.random() * 100 + 'vw';
+                span.style.animationDelay = Math.random() * 5 + 's';
+                span.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                container.appendChild(span);
+            }
+        }
+        createFloatingEmojis();
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('timer-container').classList.remove('hidden');
+            showQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    forceSubmit();
+                }
+                if (timeLeft <= 30) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestionIndex];
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('current-q').innerText = currentQuestionIndex + 1;
+            document.getElementById('progress').style.width = ((currentQuestionIndex + 1) / questions.length * 100) + '%';
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-card w-full text-left p-5 rounded-[1.5rem] flex items-center gap-4 group';
+                button.innerHTML = `
+                    <span class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-pink-50 text-pink-400 font-black flex-shrink-0 group-hover:bg-pink-400 group-hover:text-white transition-all shadow-sm border border-pink-100">${String.fromCharCode(65 + index)}</span>
+                    <span class="text-gray-600 font-bold">${option}</span>
+                `;
+                button.onclick = (e) => selectOption(index, button, e);
+                optionsContainer.appendChild(button);
+            });
+
+            answered = false;
+            document.getElementById('next-btn').disabled = true;
+            document.getElementById('next-btn').className = 'bg-gray-100 text-gray-300 font-black py-4 px-14 rounded-2xl cursor-not-allowed shadow-inner';
+        }
+
+        function spawnConfetti(x, y) {
+            const colors = ['#f472b6', '#c084fc', '#60a5fa', '#34d399', '#fbbf24', '#f87171'];
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = x + 'px';
+                confetti.style.top = y + 'px';
+                
+                // Randomize trajectory
+                const tx = (Math.random() - 0.5) * 300 + 'px';
+                const ty = (Math.random() - 1) * 200 + 'px';
+                const tr = (Math.random() * 720) + 'deg';
+                
+                confetti.style.setProperty('--tx', tx);
+                confetti.style.setProperty('--ty', ty);
+                confetti.style.setProperty('--tr', tr);
+                
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 1500);
+            }
+        }
+
+        function selectOption(index, element, event) {
+            if (answered) return;
+            
+            answered = true;
+            const correctIndex = questions[currentQuestionIndex].answer;
+            const options = document.querySelectorAll('.option-card');
+
+            if (index === correctIndex) {
+                element.classList.add('correct');
+                score++;
+                spawnConfetti(event.pageX, event.pageY);
+            } else {
+                element.classList.add('incorrect');
+                options[correctIndex].classList.add('correct');
+            }
+
+            document.getElementById('score-text').innerText = `Đúng: ${score} 🍬`;
+            document.getElementById('next-btn').disabled = false;
+            document.getElementById('next-btn').className = 'bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white font-black py-4 px-14 rounded-2xl shadow-lg transition-all transform hover:scale-105 active:scale-95 cursor-pointer';
+            
+            if (currentQuestionIndex === questions.length - 1) {
+                document.getElementById('next-btn').innerText = 'XEM KẾT QUẢ 🏁';
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                clearInterval(timerInterval);
+                showResults();
+            }
+        }
+
+        function forceSubmit() {
+            document.getElementById('result-title').innerText = "HẾT GIỜ RỒI! ⏰";
+            showResults();
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('timer-container').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('score-circle').innerText = `${score}/${questions.length}`;
+            
+            const circle = document.getElementById('result-progress');
+            const offset = 440 - (score / questions.length) * 440;
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 300);
+
+            let comment = "";
+            let emoji = "🏆";
+            if (score === 10) {
+                comment = "Đỉnh của chóp! Bạn là sứ giả bình đẳng giới thực thụ đó nha! 🌈✨";
+                emoji = "🌟👑🌟";
+            } else if (score >= 7) {
+                comment = "Giỏi quá đi! Bạn có tư duy rất tiến bộ và đáng yêu. 💖🧸";
+                emoji = "🎉🎈🎉";
+            } else if (score >= 5) {
+                comment = "Khá lắm nè! Cố gắng tìm hiểu thêm để lan tỏa yêu thương nhé! 🍭🏡";
+                emoji = "🐣🐥🐣";
+            } else {
+                comment = "Không sao đâu nè, đọc thêm một chút là sẽ hiểu ngay thôi! 💪✨";
+                emoji = "🌱💧🌱";
+            }
+            
+            document.getElementById('result-comment').innerText = comment;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            timeLeft = 300;
+            document.getElementById('result-title').innerText = "KẾT QUẢ NÈ!";
+            document.getElementById('timer').classList.remove('warning');
+            document.getElementById('score-text').innerText = `Đúng: 0 🍬`;
+            document.getElementById('next-btn').innerText = 'TIẾP TỤC ✨';
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
